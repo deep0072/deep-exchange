@@ -10,7 +10,7 @@ pub async fn check_auth_middlewarer(req:ServiceRequest, next:Next<impl MessageBo
 
     
 
-    let claim = decode_jwt(token.trim().to_owned()).map_err(|_| ErrorUnauthorized("invalid token"))?;
+    let claim: jsonwebtoken::TokenData<crate::utils::jwt_module::UserClaims> = decode_jwt(token.trim().to_owned()).map_err(|_| ErrorUnauthorized("invalid token"))?;
     req.extensions_mut().insert(claim.claims);
   
     let res = next.call(req).await?;
