@@ -29,7 +29,7 @@ struct Fills {
     other_user_id: String,
     trade_id: u32,
     timestamp: u64,
-    order_id: String,
+    order_id: u32,
 }
 
 struct OrderBook {
@@ -56,6 +56,15 @@ impl OrderBook {
         }
     }
 
+    fn add_order(&mut self, order: Order) {
+        if (order.side == Side::BIDS) {
+            let (fills, executed_qty) = self.match_bid(order);
+        } else {
+            self.match_ask(order);
+        }
+    }
+
+    // match bid
     fn match_bid(&mut self, order: Order) -> (Vec<Fills>, f32) {
         let mut fills: Vec<Fills> = Vec::new();
         let mut executed_quanity = 0.0;
@@ -85,11 +94,38 @@ impl OrderBook {
 
         return (fills, executed_quanity);
     }
-    fn add_order(&mut self, order: Order) {
-        if (order.side == Side::BIDS) {
-            let (fills, executed_qty) = self.match_bid(order);
-        } else {
-            self.match_ask()
+
+    // match asks
+
+    fn match_ask(&self, order: Order) -> (Vec<Fills>, f32) {
+        let mut executed_qty = 0.0;
+
+        let fills: Vec<Fills> = Vec::new();
+        for bid in self.bids.iter_mut() {
+            if bid.price >= order.price && executed_qty <= order.quantity {
+                let mut filled_qty = order.quantity.min(bid.quantity);
+                bid.filled += filed_qty;
+                executed_qty += filled_qty;
+                self.last_traded_id += 1;
+
+                fills.push(Fills {
+                    price: bid.price,
+                    qty: filled_qty,
+                    trade_id: self.last_traded_id,
+                    // timestamp,
+                    other_user_id: bid.user.clone(),
+                    order_id: bid.order_id,
+                    trade_id: self.last_traded_id,
+                })
+            }
         }
+
+        for bid in self.bids.iter_mut() {
+            if bid.filled == bid.quantity {
+                self.bids.retian(|x| x.id == bid.id);
+            }
+        }
+
+        return (fills, executed_qty);
     }
 }
