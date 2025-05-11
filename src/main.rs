@@ -2,22 +2,18 @@ use actix_web::{web, App, HttpServer};
 use db::conn::Pool;
 use dotenvy::dotenv;
 mod handlers;
-use std::env;  
+use std::env;
+mod db;
+mod engine;
+mod middleware;
 mod models;
 mod routes;
-mod db;
 mod utils;
-mod middleware;
-
-
-
-
-
 
 use sqlx::postgres::PgPoolOptions;
 
-struct AppState{
-    db:Pool
+struct AppState {
+    db: Pool,
 }
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -28,24 +24,16 @@ async fn main() -> std::io::Result<()> {
         Ok(val) => val,
         Err(e) => "couldn't interpret {e}".to_string(),
     };
-    
 
     let pool = db::conn::init_pool(&pg_url).await;
 
- 
-
-   HttpServer::new( move || {
-    App::new()
-        //  .app_Data() shove the database data from top to bottom 
-       
-        .app_data(web::Data::new(AppState{
-
-            db:pool.clone()
-        }))
-        .configure(routes::auth_routes::config)  // Remove .service(web::scope("/api"))
-        
-   })
-   .bind(("127.0.0.1", 8080))?
-   .run()
-   .await
+    HttpServer::new(move || {
+        App::new()
+            //  .app_Data() shove the database data from top to bottom
+            .app_data(web::Data::new(AppState { db: pool.clone() }))
+            .configure(routes::auth_routes::config) // Remove .service(web::scope("/api"))
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }

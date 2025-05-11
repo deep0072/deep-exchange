@@ -39,6 +39,7 @@ struct OrderBook {
     quote_asset: String,
     last_trade_id: u32,
     current_price: f32,
+    i: u32,
 }
 
 impl OrderBook {
@@ -51,15 +52,16 @@ impl OrderBook {
         Self {
             asks: Vec::new(),
             bids: Vec::new(),
-            last_trade_id: 0.0,
+            last_trade_id: 0,
             current_price: 0.0,
         }
     }
 
     fn add_order(&mut self, order: Order) {
-        if (order.side == Side::BIDS) {
+        if order.side == Side::BIDS {
             let (fills, executed_qty) = self.match_bid(order);
-        } else {
+        }
+        if order.side == Side::ASKS {
             self.match_ask(order);
         }
     }
@@ -67,11 +69,11 @@ impl OrderBook {
     // match bid
     fn match_bid(&mut self, order: Order) -> (Vec<Fills>, f32) {
         let mut fills: Vec<Fills> = Vec::new();
-        let mut executed_quanity = 0.0;
+        let mut executed_quantity = 0.0;
         for ask in self.asks.iter_mut() {
             if ask.price <= order.price && executed_quantity <= order.quantity {
-                let mut filled_qty = order.quantity.min(ask.quantity);
-                executed_qty += filled_qty;
+                let mut filled_qty = (order.quantity - executed_quantity).min(ask.quantity);
+                executed_quantity += filled_qty;
                 ask.filled += filled_qty;
                 self.last_trade_id += 1;
 
@@ -79,53 +81,69 @@ impl OrderBook {
                     price: ask.price,
                     qty: filled_qty,
                     trade_id: self.last_trade_id,
-                    othet_user_id: ask.user_id.clone(),
+                    timestamp: 0,
+                    other_user_id: ask.user_id.clone(),
                     order_id: ask.order_id,
                 })
             }
         }
 
-        for ask in self.asks.iter_mut() {
-            if ask.filled == ask.quantity {
-                // pop that asks from vec
-                self.asks.retain(|x| x.id != ask.id);
-            }
-        }
+        // filter out filled asks id that present in orderbook
+        let asks_to_remove: Vec<u32> = self
+            .asks
+            .iter()
+            .filter(|ask| ask.filled == ask.quantity)
+            .map(|ask| ask.order_id)
+            .collect();
 
-        return (fills, executed_quanity);
+        // then remove those filled asks by removing from originak array
+        self.asks
+            .retain(|ask| !asks_to_remove.contains(&ask.order_id));
+        return (fills, executed_quantity);
     }
 
     // match asks
 
-    fn match_ask(&self, order: Order) -> (Vec<Fills>, f32) {
+    fn match_ask(&mut self, order: Order) -> (Vec<Fills>, f32) {
         let mut executed_qty = 0.0;
+        let mut fills: Vec<Fills> = Vec::new();
 
-        let fills: Vec<Fills> = Vec::new();
         for bid in self.bids.iter_mut() {
             if bid.price >= order.price && executed_qty <= order.quantity {
-                let mut filled_qty = order.quantity.min(bid.quantity);
-                bid.filled += filed_qty;
+                let mut filled_qty = (order.quantity - executed_qty).min(bid.quantity);
+                bid.filled += filled_qty;
                 executed_qty += filled_qty;
-                self.last_traded_id += 1;
+                self.last_trade_id += 1;
 
                 fills.push(Fills {
                     price: bid.price,
                     qty: filled_qty,
-                    trade_id: self.last_traded_id,
-                    // timestamp,
-                    other_user_id: bid.user.clone(),
+                    trade_id: self.last_trade_id,
+                    timestamp: 0, // Add a proper timestamp implementation
+                    other_user_id: bid.user_id.clone(),
                     order_id: bid.order_id,
-                    trade_id: self.last_traded_id,
                 })
             }
         }
+        // while iterating, collect order_ids to remove
 
-        for bid in self.bids.iter_mut() {
-            if bid.filled == bid.quantity {
-                self.bids.retian(|x| x.id == bid.id);
-            }
-        }
+        let bids_to_remove: Vec<u32> = self
+            .bids
+            .iter()
+            .filter(|bid| bid.filled == bid.quantity)
+            .map(|bid| bid.order_id)
+            .collect();
+
+        // then ovveride all bids which do not contain bid that already filled
+        self.bids
+            .retain(|bid| !bids_to_remove.contains(&bid.order_id));
 
         return (fills, executed_qty);
     }
+
+    // fn get_depth(&mut self) {
+    //     // this function used to get
+    //     // total quantity is available at each specific price level for both bids and asks
+    //     let mut bids:Vec<>
+    // }
 }
