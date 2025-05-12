@@ -96,7 +96,7 @@ impl OrderBook {
             .map(|ask| ask.order_id)
             .collect();
 
-        // then remove those filled asks by removing from originak array
+        // then remove those filled asks by removing from original array
         self.asks
             .retain(|ask| !asks_to_remove.contains(&ask.order_id));
         return (fills, executed_quantity);
