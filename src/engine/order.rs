@@ -8,6 +8,7 @@
 //     asks: Vec<Order>,
 //     buy: Vec<Order>,
 // }
+use std::collections::HashMap;
 
 enum Side {
     ASKS,
@@ -146,4 +147,25 @@ impl OrderBook {
     //     // total quantity is available at each specific price level for both bids and asks
     //     let mut bids:Vec<>
     // }
+    //
+    fn get_depth(&mut self) {
+        // get aggregated total quanity of each bids at specific prices
+        //
+
+        let mut bids_object: HashMap<String, f32> = HashMap::new();
+
+        let mut bids: Vec<Vec<String>> = Vec::new();
+        let mut asks_object: HashMap<String, f32> = HashMap::new();
+
+        for bid in self.bids.iter() {
+            *bids_object.entry((bid.price).to_string()).or_insert(0.0) += bid.quantity;
+        }
+
+        // get aggregated total quanity of each asks at specific prices
+        for ask in self.asks.iter() {
+            *asks_object.entry(ask.price.to_string()).or_insert(0.0) += ask.quantity;
+        }
+
+        // for bid_oject in bids_object
+    }
 }
