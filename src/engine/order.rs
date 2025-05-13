@@ -149,12 +149,14 @@ impl OrderBook {
     // }
     //
     fn get_depth(&mut self) {
+        // let say there 5 order that sits in orderbook
+        // each 2 order at 2000 $ and 3 order at $2100
+        // so this gives output return ==>[(2000, 2),(2100,3)]
+        let mut bids: Vec<(String, String)> = Vec::new();
+        let mut asks: Vec<(String, String)> = Vec::new();
         // get aggregated total quanity of each bids at specific prices
-        //
 
         let mut bids_object: HashMap<String, f32> = HashMap::new();
-
-        let mut bids: Vec<Vec<String>> = Vec::new();
         let mut asks_object: HashMap<String, f32> = HashMap::new();
 
         for bid in self.bids.iter() {
@@ -166,6 +168,28 @@ impl OrderBook {
             *asks_object.entry(ask.price.to_string()).or_insert(0.0) += ask.quantity;
         }
 
-        // for bid_oject in bids_object
+        for (price, value) in bids_object.iter() {
+            bids.push((price.to_string(), value.to_string()));
+        }
+
+        for (price, value) in asks_object.iter() {
+            asks.push((price.to_string(), value.to_string()));
+        }
+    }
+
+    // get open order that sits on both side of asks and bids
+    fn get_open_order(&mut self, user_id: String) -> (Vec<&Order>, Vec<&Order>) {
+        let open_asks: Vec<&Order> = self
+            .asks
+            .iter()
+            .filter(|ask| ask.user_id == user_id)
+            .collect();
+
+        let open_bids: Vec<&Order> = self
+            .bids
+            .iter()
+            .filter(|bid| bid.user_id == user_id)
+            .collect();
+        (open_asks, open_bids)
     }
 }
