@@ -10,6 +10,7 @@
 // }
 use std::collections::HashMap;
 
+#[derive(PartialEq, Eq)]
 enum Side {
     ASKS,
     BIDS,
@@ -40,7 +41,6 @@ struct OrderBook {
     quote_asset: String,
     last_trade_id: u32,
     current_price: f32,
-    i: u32,
 }
 
 impl OrderBook {
@@ -55,10 +55,12 @@ impl OrderBook {
             bids: Vec::new(),
             last_trade_id: 0,
             current_price: 0.0,
+            base_asset: String::new(),
+            quote_asset: String::new(),
         }
     }
 
-    fn add_order(&mut self, order: Order) {
+    fn add_order(&mut self, order: &mut Order) {
         if order.side == Side::BIDS {
             let (fills, executed_qty) = self.match_bid(order);
         }
@@ -68,7 +70,7 @@ impl OrderBook {
     }
 
     // match bid
-    fn match_bid(&mut self, order: Order) -> (Vec<Fills>, f32) {
+    fn match_bid(&mut self, order: &mut Order) -> (Vec<Fills>, f32) {
         let mut fills: Vec<Fills> = Vec::new();
         let mut executed_quantity = 0.0;
         for ask in self.asks.iter_mut() {
@@ -105,7 +107,7 @@ impl OrderBook {
 
     // match asks
 
-    fn match_ask(&mut self, order: Order) -> (Vec<Fills>, f32) {
+    fn match_ask(&mut self, order: &mut Order) -> (Vec<Fills>, f32) {
         let mut executed_qty = 0.0;
         let mut fills: Vec<Fills> = Vec::new();
 
@@ -194,11 +196,13 @@ impl OrderBook {
     }
 
     // cancel bids and cancel asks
-    fn cancel_bids(&mut self, order: Order) {
+    fn cancel_bids(&mut self, order: Order) -> &Vec<Order> {
         self.bids.retain(|bid| bid.order_id != order.order_id);
+        &self.bids
     }
 
-    fn cancel_asks(&mut self, order: Order) {
+    fn cancel_asks(&mut self, order: Order) -> &Vec<Order> {
         self.asks.retain(|ask| ask.order_id == order.order_id);
+        &self.asks
     }
 }
