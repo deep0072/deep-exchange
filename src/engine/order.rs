@@ -192,4 +192,13 @@ impl OrderBook {
             .collect();
         (open_asks, open_bids)
     }
+
+    // cancel bids and cancel asks
+    fn cancel_bids(&mut self, order: Order) {
+        self.bids.retain(|bid| bid.order_id != order.order_id);
+    }
+
+    fn cancel_asks(&mut self, order: Order) {
+        self.asks.retain(|ask| ask.order_id == order.order_id);
+    }
 }
