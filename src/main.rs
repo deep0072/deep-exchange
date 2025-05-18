@@ -1,13 +1,12 @@
 use actix_web::{web, App, HttpServer};
 use db::conn::Pool;
 use dotenvy::dotenv;
-mod handlers;
+mod api;
 use std::env;
 mod db;
 mod engine;
 mod middleware;
 mod models;
-mod routes;
 mod utils;
 
 use sqlx::postgres::PgPoolOptions;
@@ -31,7 +30,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             //  .app_Data() shove the database data from top to bottom
             .app_data(web::Data::new(AppState { db: pool.clone() }))
-            .configure(routes::auth_routes::config) // Remove .service(web::scope("/api"))
+            .configure(api::routes::routes::config) // Remove .service(web::scope("/api"))
     })
     .bind(("127.0.0.1", 8080))?
     .run()

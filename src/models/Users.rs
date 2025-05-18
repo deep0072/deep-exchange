@@ -1,17 +1,16 @@
-
-use serde::{Deserialize,Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
-pub struct Users{
-    pub username:String,
-    pub password:String
-
+pub struct Users {
+    pub username: String,
+    pub email: Option<String>,
+    pub password: String,
 }
 
 #[derive(Serialize)]
-pub struct UserResponse{
+pub struct UserResponse {
     id: i32,
-    username:String
+    username: String,
 }
 
 // impl Users {
@@ -22,4 +21,3 @@ pub struct UserResponse{
 
 //     }
 // }
-
