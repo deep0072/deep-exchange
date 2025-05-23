@@ -1,4 +1,7 @@
 
+## Diagram Reference
+
+
 
 ![image](https://github.com/user-attachments/assets/d64d1d21-3459-416f-92d1-2d0027cea670)
 
@@ -103,11 +106,8 @@ The platform facilitates real-time trading, order processing, and price/ticker u
 
 ---
 
-## Diagram Reference
 
-```
-[Architecture diagram goes here: see attached image]
-```
+
 
 ---
 
