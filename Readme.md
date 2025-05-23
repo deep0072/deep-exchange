@@ -111,7 +111,5 @@ The platform facilitates real-time trading, order processing, and price/ticker u
 
 ---
 
-## License
 
-[Specify your license here]
 
